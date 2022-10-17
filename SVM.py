@@ -146,7 +146,7 @@ X_test_hog = hogify.transform(X_test_gray)
 X_test_prepared = scalify.transform(X_test_hog)
 
 
-param_grid={'C':[1],'gamma':[0.0001,0.001,0.1,1],'kernel':['poly']}
+param_grid={'C':[0.1,1,10,100],'gamma':[0.0001,0.001,0.1,1],'kernel':['poly', 'rbf']}
 svc=svm.SVC(probability=True)
 print("The training of the model is started, please wait for while as it may take few minutes to complete")
 model=GridSearchCV(svc,param_grid)
