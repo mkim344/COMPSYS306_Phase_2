@@ -39,7 +39,7 @@ def resize_all(src, pklname, include, width=150, height=None):
                     im = resize(im, (width, height))  # [:,:,::-1]
                     data['label'].append(subdir)
                     data['filename'].append(file)
-                    data['data'].append(im)
+                    data['data'].append(im.flatten())
 
         joblib.dump(data, 'SVM_test_data.joblib')
 
@@ -125,28 +125,28 @@ class HogTransformer(BaseEstimator, TransformerMixin):
 
 
 # create an instance of each transformer
-grayify = RGB2GrayTransformer()
-hogify = HogTransformer(
-    pixels_per_cell=(14, 14),
-    cells_per_block=(2, 2),
-    orientations=9,
-    block_norm='L2-Hys'
-)
+# grayify = RGB2GrayTransformer()
+# hogify = HogTransformer(
+#     pixels_per_cell=(14, 14),
+#     cells_per_block=(2, 2),
+#     orientations=9,
+#     block_norm='L2-Hys'
+# )
 scalify = StandardScaler()
 
 # call fit_transform on each transform converting X_train step by step
-X_train_gray = grayify.fit_transform(X_train)
-X_train_hog = hogify.fit_transform(X_train_gray)
-X_train_prepared = scalify.fit_transform(X_train_hog)
+# X_train_gray = grayify.fit_transform(X_train)
+# X_train_hog = hogify.fit_transform(X_train_gray)
+X_train_prepared = scalify.fit_transform(X_train)
 
 print(X_train_prepared.shape)
 
-X_test_gray = grayify.transform(X_test)
-X_test_hog = hogify.transform(X_test_gray)
-X_test_prepared = scalify.transform(X_test_hog)
+# X_test_gray = grayify.transform(X_test)
+# X_test_hog = hogify.transform(X_test_gray)
+X_test_prepared = scalify.transform(X_test)
 
 
-param_grid={'C':[0.1,1,10,100],'gamma':[0.0001,0.001,0.1,1],'kernel':['poly', 'rbf']}
+param_grid={'C':[0.1],'gamma':[0.0001],'kernel':['poly']}
 svc=svm.SVC(probability=True)
 print("The training of the model is started, please wait for while as it may take few minutes to complete")
 model=GridSearchCV(svc,param_grid)
@@ -154,10 +154,11 @@ model.fit(X_train_prepared,y_train)
 print('The Model is trained well with the given images')
 print("\n The best parameters :\n",model.best_params_)
 
+joblib.dump(model, 'SVM_model.joblib')
+
+
 y_pred = model.predict(X_test_prepared)
 print(f"The models is {accuracy_score(y_pred,y_test)*100}% accurate")
-
-joblib.dump(model, 'SVM_model.joblib')
 
 
 
